@@ -1,3 +1,37 @@
+
+function Get-CurrentDriverVersion {
+    # param (
+    #     OptionalParameters
+    # )
+    
+    if (Test-Path -Path "$env:SystemRoot\System32\DriverStore\FileRepository\nv_*\nvidia-smi.exe")
+	{
+		# The NVIDIA System Management Interface (nvidia-smi) is a command line utility, based on top of the NVIDIA Management Library (NVML)
+		$CurrentDriverVersion = nvidia-smi.exe --format=csv,noheader --query-gpu=driver_version
+	}
+	else
+	{
+		[System.Version]$Driver = (Get-CimInstance -ClassName Win32_VideoController | Where-Object -FilterScript {$_.Name -match "NVIDIA"}).DriverVersion
+  		if ($Driver)
+    		{
+      		
+			$CurrentDriverVersion = ("{0}{1}" -f $Driver.Build, $Driver.Revision).Substring(1).Insert(3,'.')
+   		}
+     		else
+       		{
+			Throw "No NVIDIA card detected." 
+   		}
+	}
+
+	Write-Host "Current version: $CurrentDriverVersion"
+	# Write-Information -MessageData "" -InformationAction Continue
+
+    return $CurrentDriverVersion
+}
+
+# Get-CurrentDriverVersion
+
+
 function Get-LatestDriverVersion {
     # param (
     #     OptionalParameters
@@ -87,3 +121,53 @@ function Get-LatestDriverVersion {
 }
 
 Get-LatestDriverVersion
+
+
+# Extracting installer
+	
+
+
+function Extract-Driver {
+    param (
+        $FilePath,
+        $LatestVersion,
+        $DestinationFolder = "$env:USERPROFILE\Downloads\NVIDIA Driver $LatestVersion"
+    )
+
+    # TODO: test 7zip / nanazip install
+
+    # Based on 7-zip.chm
+	$Arguments = @(
+		# Extracts files from an archive with their full paths in the current directory, or in an output directory if specified
+		"x",
+		# standard output messages. disable stream
+		"-bso0",
+		# progress information. redirect to stdout stream
+		"-bsp1",
+		# error messages. redirect to stdout stream
+		"-bse1",
+		# Overwrite All existing files without prompt
+		"-aoa",
+		# What to extract
+		$FilePath,
+		# Extract these files and folders
+		"Display.Driver HDAudio NVI2 NVApp NVApp.MessageBus NVCpl PhysX EULA.txt ListDevices.txt setup.cfg setup.exe",
+		# Specifies a destination directory where files are to be extracted
+		"-o`"C:\Users\Jax\Downloads\NVidia`""
+	)
+	$Parameters = @{
+		FilePath     = "7z.exe"
+		ArgumentList = $Arguments
+		NoNewWindow  = $true
+		Wait         = $true
+	}
+	Start-Process @Parameters
+
+    $SetupExePath = Join-Path -Path $DestinationFolder -ChildPath "setup.exe"
+    if (Test-Path $SetupExePath) {
+        Start-Process -FilePath $SetupExePath -Wait
+    } else {
+        Write-Error "setup.exe not found in $DestinationFolder"
+    }
+    
+}

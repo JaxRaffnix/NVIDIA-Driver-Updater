@@ -4,3 +4,4 @@ Check current NVIDIA driver version and download&install newest release.
 
 This is a fork from [farag2](https://github.com/farag2/NVidia-Driver-Downloader)
 
+also check [lord carlos](https://github.com/lord-carlos/nvidia-update)
