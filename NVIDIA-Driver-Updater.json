@@ -1,0 +1,8 @@
+{
+  "ModuleVersion": "1.0.0",
+  "Author": "Jan Hoegen",
+  "Description": "Updates the device with latest NVIDIA drivers.",
+  "ProjectUri": "https://github.com/JaxRaffnix/NVIDIA-Driver-Updater",
+  "PowerShellVersion": "5.1",
+  "IgnoreFiles": [".git", ".gitignore", ".vscode", "NVIDIA-Driver-Updater.json"]
+}
